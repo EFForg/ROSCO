@@ -31,7 +31,7 @@ class SnipeAPI
       'Authorization' => "Bearer #{ @@access_token }",
     }
 
-    query["offset"] = offset if offset > 0
+    query['offset'] = offset if offset > 0
     response = HTTParty.get(@base_url + url, query: query, headers: headers)
 
     row_count = response['rows'].count
@@ -82,8 +82,8 @@ class SnipeAPI
       all = get_active_laptops
       spares = get_spare_laptops
 
-      spare_ids = spares.collect{|i| i["id"]}
-      @staff_laptops = all.reject{|i| spare_ids.include?(i["id"])}
+      spare_ids = spares.collect{|i| i['id']}
+      @staff_laptops = all.reject{|i| spare_ids.include?(i['id'])}
     else
       @staff_laptops
     end
@@ -144,18 +144,18 @@ class SnipeAPI
     # Do not include these very old assets if filtering by age
     if older_than_years == 0.0
       # Format assets that have word based asset_tags, such as 'oldspare03'
-      data += laptops.reject{|i| i["asset_tag"].to_i != 0}
-        .sort_by{|i| i["asset_tag"]}
-        .map{|i| ["---", "---", i["asset_tag"], i["serial"], i["name"]]}
+      data += laptops.reject{|i| i['asset_tag'].to_i != 0}
+        .sort_by{|i| i['asset_tag']}
+        .map{|i| ['---', '---', i['asset_tag'], i['serial'], i['name']]}
 
       # Format assets that are so old the asset_tags increment from '000000001' and up
-      data += laptops.reject{|i| i["asset_tag"].to_i == 0 or i["asset_tag"].to_i > 100}
-        .sort_by{|i| i["asset_tag"]}
-        .map{|i| ["---", "---", i["asset_tag"], i["serial"], i["name"]]}
+      data += laptops.reject{|i| i['asset_tag'].to_i == 0 or i['asset_tag'].to_i > 100}
+        .sort_by{|i| i['asset_tag']}
+        .map{|i| ['---', '---', i['asset_tag'], i['serial'], i['name']]}
     end
 
     # Format assets that have date-based asset_tags (default asset_tag structure)
-    date_asset_tags = laptops.reject{|i| i["asset_tag"].to_i == 0 or i["asset_tag"].to_i <= 100}
+    date_asset_tags = laptops.reject{|i| i['asset_tag'].to_i == 0 or i['asset_tag'].to_i <= 100}
 
     # Filter date-based asset_tags based on approx age
     if older_than_years != 0.0
@@ -175,7 +175,7 @@ class SnipeAPI
       laptops = laptops.reject{|i| i['status_label'][status_field] != status}
     end
     data = laptops.sort_by{|i| i['status_label'][status_field]}
-        .map{|i| [i['status_label'][status_field], i["asset_tag"], i["serial"], i["name"]]}
+        .map{|i| [i['status_label'][status_field], i['asset_tag'], i['serial'], i['name']]}
     print_table(data, ['Status', 'Asset Tag', 'Serial', 'Asset Name'])
   end
 
