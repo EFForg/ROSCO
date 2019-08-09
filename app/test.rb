@@ -44,6 +44,14 @@ class SnipeAPI
     response
   end
 
+  def print_table(data, headings)
+    puts Terminal::Table.new(
+      :rows => data,
+      :headings => headings
+    )
+    puts "Total: #{data.count}"
+  end
+
   # def get_statuses
   #   return @statuses unless @statuses.nil?
   #   response = self.query('statuslabels')
@@ -100,7 +108,7 @@ class SnipeAPI
     end
   end
 
-  def get_laptop_fleet(type)
+  def get_laptops(type)
     if type == 'spares'
       return self.get_spare_laptops
     elsif type == 'staff'
@@ -117,16 +125,22 @@ class SnipeAPI
   # Return a table of in-warranty laptops.
   #
   # @param [String] fleet_type Can be 'all', 'spares', 'staff'
+  def get_laptop_fleet(fleet_type)
+    laptops = get_laptops(fleet_type)
+    data = laptops.sort_by{|i| i['asset_tag']}
+      .map{|i| [i['asset_tag'], i['serial'], i['name']]}
+    print_table(data, ['Asset Tag', 'Serial', 'Asset Name'])
+  end
+
+  # Return a table of in-warranty laptops.
+  #
+  # @param [String] fleet_type Can be 'all', 'spares', 'staff'
   def get_laptops_in_warranty(fleet_type)
-    laptops = get_laptop_fleet(fleet_type)
+    laptops = get_laptops(fleet_type)
     data = laptops.reject{|i| i['warranty_expires'].nil? or Date.parse(i['warranty_expires']['date']) < DateTime.now}
       .sort_by{|i| i['warranty_expires']['date']}
       .map{|i| [i['warranty_expires']['date'], i['asset_tag'], i['serial'], i['name']]}
-    puts Terminal::Table.new(
-      :rows => data,
-      :headings => ['Warranty Expires', 'Asset Tag', 'Serial', 'Asset Name']
-    )
-    puts "Total: #{data.count}"
+    print_table(data, ['Warranty Expires', 'Asset Tag', 'Serial', 'Asset Name'])
   end
 
   # Return a table of laptops sorted by age.
@@ -135,7 +149,7 @@ class SnipeAPI
   # @param [String] fleet_type Can be 'all', 'spares', 'staff'
   # @param [Float] older_than_years Filter out results that are newer than the approx years given
   def get_laptops_by_age(fleet_type, older_than_years = 0.0)
-    laptops = get_laptop_fleet(fleet_type)
+    laptops = get_laptops(fleet_type)
     data = []
 
     # Do not include these very old assets if filtering by age
@@ -162,10 +176,6 @@ class SnipeAPI
     data += date_asset_tags.sort_by{|i| i["asset_tag"]}
       .map{|i| [Date.parse(i["asset_tag"]).strftime('%Y-%m-%d'), ((Date.today - Date.parse(i["asset_tag"]))/365.0).round(3), i["asset_tag"], i["serial"], i["name"]]}
 
-    puts Terminal::Table.new(
-      :rows => data,
-      :headings => ['Purchase Date', 'Approx Age', 'Asset Tag', 'Serial', 'Asset Name']
-    )
-    puts "Total: #{data.count}"
+    print_table(data, ['Purchase Date', 'Approx Age', 'Asset Tag', 'Serial', 'Asset Name'])
   end
 end
