@@ -89,11 +89,23 @@ class SnipeAPI
     end
   end
 
+  # Return all laptops that are in the archived Snipe state
+  def get_archived_laptops
+    if @archived_laptops.nil?
+      response = self.query('hardware', {'category_id' => LAPTOP_CATEGORY_ID, 'status' => 'Archived'})
+      @archived_laptops = response['rows']
+    else
+      @archived_laptops
+    end
+  end
+
   def get_laptops(type)
     if type == 'spares'
       return self.get_spare_laptops
     elsif type == 'staff'
       return self.get_staff_laptops
+    elsif type == 'archived'
+      return self.get_archived_laptops
     else
       return self.get_active_laptops
     end
@@ -101,11 +113,11 @@ class SnipeAPI
 
   # --------------------------------------------------------
   # Laptop Queries
+  #
+  # fleet_type Can be: 'all', 'spares', 'staff', 'archived'
   # --------------------------------------------------------
 
   # Return a table of in-warranty laptops.
-  #
-  # @param [String] fleet_type Can be 'all', 'spares', 'staff'
   def get_laptop_fleet(fleet_type)
     laptops = get_laptops(fleet_type)
     data = laptops.sort_by{|i| i['asset_tag']}
@@ -114,8 +126,6 @@ class SnipeAPI
   end
 
   # Return a table of in-warranty laptops.
-  #
-  # @param [String] fleet_type Can be 'all', 'spares', 'staff'
   def get_laptops_in_warranty(fleet_type)
     laptops = get_laptops(fleet_type)
     data = laptops.reject{|i| i['warranty_expires'].nil? or Date.parse(i['warranty_expires']['date']) < DateTime.now}
@@ -126,8 +136,6 @@ class SnipeAPI
 
   # Return a table of laptops sorted by age.
   # Age is approximate. This method does not calculate the intricacies of leap years, etc.
-  #
-  # @param [String] fleet_type Can be 'all', 'spares', 'staff'
   # @param [Float] older_than_years Filter out results that are newer than the approx years given
   def get_laptops_by_age(fleet_type, older_than_years = 0.0)
     laptops = get_laptops(fleet_type)
