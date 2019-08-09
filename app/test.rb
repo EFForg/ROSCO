@@ -52,16 +52,6 @@ class SnipeAPI
     puts "Total: #{data.count}"
   end
 
-  # def get_statuses
-  #   return @statuses unless @statuses.nil?
-  #   response = self.query('statuslabels')
-  #   @statuses = {}
-  #   ['archived', 'pending', 'deployable'].each do |type|
-  #     @statuses[type] = response['rows'].reject{|i| i['type'] != type}.collect{|i| {id: i['id'], name: i['name']}}
-  #   end
-  #   return @statuses
-  # end
-
   # --------------------------------------------------------
   # Laptop lists
   # --------------------------------------------------------
@@ -96,15 +86,6 @@ class SnipeAPI
       @staff_laptops = all.reject{|i| spare_ids.include?(i["id"])}
     else
       @staff_laptops
-    end
-  end
-
-  def get_laptops_by_status(status, type = false)
-    laptops = get_laptops
-    if type
-      return laptops.reject{|i| i['status_label']['status_type'] != status}
-    else
-      return laptops.reject{|i| i['status_label']['name'] != status}
     end
   end
 
@@ -177,5 +158,27 @@ class SnipeAPI
       .map{|i| [Date.parse(i["asset_tag"]).strftime('%Y-%m-%d'), ((Date.today - Date.parse(i["asset_tag"]))/365.0).round(3), i["asset_tag"], i["serial"], i["name"]]}
 
     print_table(data, ['Purchase Date', 'Approx Age', 'Asset Tag', 'Serial', 'Asset Name'])
+  end
+
+  def get_laptops_by_status(fleet_type, status = nil, type = false)
+    laptops = get_laptops(fleet_type)
+    status_field = type ? 'status_type' : 'name'
+    if not status.nil?
+      laptops = laptops.reject{|i| i['status_label'][status_field] != status}
+    end
+    data = laptops.sort_by{|i| i['status_label'][status_field]}
+        .map{|i| [i['status_label'][status_field], i["asset_tag"], i["serial"], i["name"]]}
+    print_table(data, ['Status', 'Asset Tag', 'Serial', 'Asset Name'])
+  end
+
+  # --------------------------------------------------------
+  # Status Queries
+  # --------------------------------------------------------
+
+  def get_statuses
+    response = self.query('statuslabels')
+    data = response['rows'].sort_by{|i| i['type']}
+      .map{|i| [i['id'], i['type'], i['name']]}
+    print_table(data, ['ID', 'Type', 'Name'])
   end
 end

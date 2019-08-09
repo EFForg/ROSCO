@@ -4,5 +4,5 @@
 - show me all machines within x age √
 - show me all machines that have warranties expiring soon √
 - show me all machines to be disposed
-- show me all spares and status
+- show me all spares and status √
 - sell price at today's date for a given machine
