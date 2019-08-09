@@ -1,0 +1,8 @@
+version: '2.2'
+services:
+  app:
+    build: app
+    ports:
+      - 127.0.0.1:8090:80
+    volumes:
+      - ./app/test.rb:/srv/app/test.rb
