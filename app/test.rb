@@ -4,10 +4,11 @@ require 'terminal-table'
 class SnipeAPI
   LAPTOP_CATEGORY_ID = 1
   DEPRECIATION_PERIOD = 4.0 # in years
+  BASE_URL = 'https://snipeit.app.eff.org/'
+  API_URL = "#{ BASE_URL }api/v1/"
 
   def initialize
     load_key
-    @base_url = 'https://snipeit.app.eff.org/api/v1/'
   end
 
   def error(message)
@@ -32,7 +33,7 @@ class SnipeAPI
     }
 
     query['offset'] = offset if offset > 0
-    response = HTTParty.get(@base_url + url, query: query, headers: headers)
+    response = HTTParty.get(API_URL + url, query: query, headers: headers)
 
     if response.code != 200
       self.error(__method__.to_s)
@@ -45,12 +46,13 @@ class SnipeAPI
     response
   end
 
-  def print_table(data, headings)
-    puts Terminal::Table.new(
-      :rows => data,
-      :headings => headings
-    )
+  def print_table(data, headings = [])
+    puts Terminal::Table.new(rows: data, headings: headings)
     puts "Total: #{data.count}"
+  end
+
+  def print_laptop_url(laptop_id)
+    puts "Link: #{ BASE_URL }hardware/#{ laptop_id }"
   end
 
   # --------------------------------------------------------
@@ -83,7 +85,7 @@ class SnipeAPI
       all = get_active_laptops
       spares = get_spare_laptops
 
-      spare_ids = spares.collect{|i| i['id']}
+      spare_ids = spares.map{|i| i['id']}
       @staff_laptops = all.reject{|i| spare_ids.include?(i['id'])}
     else
       @staff_laptops
@@ -207,6 +209,32 @@ class SnipeAPI
       ['Est Price', 'Approx Age', 'Purchase Cost', 'Asset Tag', 'Serial', 'Asset Name'])
   end
 
+  def get_laptop_info(asset_tag)
+    ignored_fields = ['available_actions', 'category', 'checkin_counter', 'checkout_counter', 'company', 'created_at', 'custom_fields', 'deleted_at', 'eol', 'expected_checkin', 'image', 'last_audit_date', 'location', 'last_checkout', 'model_number', 'next_audit_date', 'requests_counter', 'rtd_location', 'supplier', 'updated_at', 'warranty_months']
+    name_fields = ['model', 'status_label', 'manufacturer']
+    date_fields = ['updated_at', 'warranty_expires', 'purchase_date']
+
+    laptop = get_laptop(asset_tag)
+    laptop = laptop.reject{|k,v| ignored_fields.include?(k)}
+    data = []
+    laptop.each do |k,v|
+      case k
+      when *name_fields
+        data << [k, v['name']]
+      when *date_fields
+        data << [k, v['formatted']]
+      when 'assigned_to'
+        unless v.nil?
+          data << [k, v['username']]
+        end
+      else
+        data << [k, v]
+      end
+    end
+
+    print_table(data, ['Attribute', 'Value'])
+    print_laptop_url(laptop['id'])
+  end
 
   # --------------------------------------------------------
   # Status Queries
