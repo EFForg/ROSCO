@@ -2,8 +2,8 @@ require 'httparty'
 require 'terminal-table'
 
 class SnipeAPI
-
   LAPTOP_CATEGORY_ID = 1
+  DEPRECIATION_PERIOD = 4.0 # in years
 
   def initialize
     load_key
@@ -34,10 +34,11 @@ class SnipeAPI
     query['offset'] = offset if offset > 0
     response = HTTParty.get(@base_url + url, query: query, headers: headers)
 
-    row_count = response['rows'].count
     if response.code != 200
       self.error(__method__.to_s)
-    elsif row_count > 0
+    elsif not response.key?('rows')
+      return response
+    elsif (row_count = response['rows'].count) > 0
       next_response = self.query(url, query, offset + row_count)
       response['rows'] += next_response['rows'] if next_response.code == 200
     end
@@ -112,6 +113,22 @@ class SnipeAPI
   end
 
   # --------------------------------------------------------
+  # Laptop Helpers
+  # --------------------------------------------------------
+
+  # Get one laptop by asset_tag
+  def get_laptop(asset_tag)
+    self.query("hardware/bytag/#{asset_tag}")
+  end
+
+  def calculate_asset_age(asset)
+    # Return nil if the asset has a non-date-based asset_tag
+    return nil if asset['asset_tag'].to_i == 0 or asset['asset_tag'].to_i < 100
+
+    ((Date.today - Date.parse(asset['asset_tag']))/365.0).round(3)
+  end
+
+  # --------------------------------------------------------
   # Laptop Queries
   #
   # fleet_type Can be: 'all', 'spares', 'staff', 'archived'
@@ -159,11 +176,11 @@ class SnipeAPI
 
     # Filter date-based asset_tags based on approx age
     if older_than_years != 0.0
-      date_asset_tags = date_asset_tags.reject{|i| ((Date.today - Date.parse(i["asset_tag"]))/365.0).round(3) < older_than_years}
+      date_asset_tags = date_asset_tags.reject{|i| calculate_asset_age(i) < older_than_years}
     end
 
-    data += date_asset_tags.sort_by{|i| i["asset_tag"]}
-      .map{|i| [Date.parse(i["asset_tag"]).strftime('%Y-%m-%d'), ((Date.today - Date.parse(i["asset_tag"]))/365.0).round(3), i["asset_tag"], i["serial"], i["name"]]}
+    data += date_asset_tags.sort_by{|i| i['asset_tag']}
+      .map{|i| [Date.parse(i['asset_tag']).strftime('%Y-%m-%d'), calculate_asset_age(i), i['asset_tag'], i['serial'], i['name']]}
 
     print_table(data, ['Purchase Date', 'Approx Age', 'Asset Tag', 'Serial', 'Asset Name'])
   end
@@ -178,6 +195,18 @@ class SnipeAPI
         .map{|i| [i['status_label'][status_field], i['asset_tag'], i['serial'], i['name']]}
     print_table(data, ['Status', 'Asset Tag', 'Serial', 'Asset Name'])
   end
+
+  def get_laptop_sale_price(asset_tag)
+    laptop = get_laptop(asset_tag)
+    age = calculate_asset_age(laptop)
+    price = nil
+    if not laptop['purchase_cost'].nil? and not age.nil?
+      price = laptop['purchase_cost'].to_i * (1 - [age, DEPRECIATION_PERIOD].min/DEPRECIATION_PERIOD)
+    end
+    print_table([[price, age, laptop['purchase_cost'], laptop['asset_tag'], laptop['serial'], laptop['name']]],
+      ['Est Price', 'Approx Age', 'Purchase Cost', 'Asset Tag', 'Serial', 'Asset Name'])
+  end
+
 
   # --------------------------------------------------------
   # Status Queries
