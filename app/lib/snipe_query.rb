@@ -63,19 +63,14 @@ class SnipeQuery
 
   # Return a table of in-warranty laptops.
   def print_laptops(fleet_type)
-    laptops = @snipe.get_laptops(fleet_type)
-    data = laptops.sort_by{|i| i['asset_tag']}
-      .map{|i| [i['asset_tag'], i['serial'], i['name']]}
-    @printer.print_table(data, ['Asset Tag', 'Serial', 'Asset Name'])
+    print_simple(@snipe.get_laptops(fleet_type), %w(asset_tag serial name), 'asset_tag', ['Asset Tag', 'Serial', 'Asset Name'])
   end
 
   # Return a table of in-warranty laptops.
   def print_laptops_in_warranty(fleet_type)
     laptops = @snipe.get_laptops(fleet_type)
-    data = laptops.reject{|i| i['warranty_expires'].nil? or Date.parse(i['warranty_expires']['date']) < DateTime.now}
-      .sort_by{|i| i['warranty_expires']['date']}
-      .map{|i| [i['warranty_expires']['date'], i['asset_tag'], i['serial'], i['name']]}
-    @printer.print_table(data, ['Warranty Expires', 'Asset Tag', 'Serial', 'Asset Name'])
+    data = laptops.reject {|i| i['warranty_expires'].nil? or Date.parse(i['warranty_expires']['date']) < DateTime.now }
+    print_simple(data, %w(warranty_expires.formatted asset_tag serial name), 'warranty_expires.formatted', ['Warranty Expires', 'Asset Tag', 'Serial', 'Asset Name'])
   end
 
   # Return a table of laptops sorted by age.
@@ -115,12 +110,9 @@ class SnipeQuery
   def print_laptops_by_status(fleet_type, status = nil, type = false)
     laptops = @snipe.get_laptops(fleet_type)
     status_field = type ? 'status_type' : 'name'
-    if not status.nil?
-      laptops = laptops.reject{|i| i['status_label'][status_field] != status}
-    end
-    data = laptops.sort_by{|i| i['status_label'][status_field]}
-      .map{|i| [i['status_label'][status_field], i['asset_tag'], i['serial'], i['name']]}
-    @printer.print_table(data, ['Status', 'Asset Tag', 'Serial', 'Asset Name'])
+    laptops = laptops.reject {|i| i['status_label'][status_field] != status } unless status.nil?
+    status_element = 'status_label.' + status_field
+    print_simple(laptops, [status_element, 'asset_tag', 'serial', 'name'], status_element, ['Status', 'Asset Tag', 'Serial', 'Asset Name'])
   end
 
   def print_laptop_sale_price(asset_tag)
@@ -165,10 +157,7 @@ class SnipeQuery
   # --------------------------------------------------------
 
   def print_statuses
-    statuses = @snipe.get_statuses
-    data = statuses.sort_by{|i| i['type']}
-      .map{|i| [i['id'], i['type'], i['name']]}
-    @printer.print_table(data, ['ID', 'Type', 'Name'])
+    print_simple(@snipe.get_statuses, %w(id type name), 'type', %w(ID Type Name))
   end
 
   # --------------------------------------------------------
@@ -176,22 +165,15 @@ class SnipeQuery
   # --------------------------------------------------------
 
   def print_models
-    models = @snipe.get_models
-    data = models.reject{|i| i['category']['name'] != 'Laptop'}
-      .sort_by{|i|i['manufacturer']['name']}
-      .map{|i| [i['id'], i['name'], i['manufacturer']['name'], i['assets_count']]}
-    @printer.print_table(data)
+    print_simple(@snipe.get_models, %w(id name manufacturer.name assets_count), 'manufacturer.name', %w(ID Name Manufacturer Num_Assets))
+  end
+
+  def print_laptop_models
+    print_simple(@snipe.get_laptop_models, %w(id name manufacturer.name assets_count), 'manufacturer.name', %w(ID Name Manufacturer Num_Assets))
   end
 
   def print_manufacturers
-    manufacturers = @snipe.get_manufacturers
-    data = manufacturers.sort_by{|i| i['id']}
-      .map{|i| [i['id'], i['name'], i['assets_count']]}
-    @printer.print_table(data)
-  end
-
-  def print_manufacturers
-    print_simple(@snipe.get_manufacturers, %w( id name assets_count ), 'name')
+    print_simple(@snipe.get_manufacturers, %w(id name assets_count), 'name', %w(ID Name Num_Assets))
   end
 
   # --------------------------------------------------------
@@ -199,10 +181,7 @@ class SnipeQuery
   # --------------------------------------------------------
 
   def print_users
-    users = @snipe.get_users
-    data = users.sort_by{|i| i['username']}
-      .map{|i| [i['id'], i['username']]}
-    @printer.print_table(data, ['ID', 'Username'])
+    print_simple(@snipe.get_users, %w(id username), 'username', %w(ID Username))
   end
 
   def print_mac_users

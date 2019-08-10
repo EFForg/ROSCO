@@ -129,6 +129,11 @@ class Snipe
     end
   end
 
+  def get_laptop_models
+    models = get_models
+    models.reject{|i| i['category']['name'] != 'Laptop'}
+  end
+
   def get_manufacturers
     if @manufacturers.nil?
       response = self.query('manufacturers')
