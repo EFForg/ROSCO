@@ -60,7 +60,7 @@ class SnipeQuery
     end
   end
 
-  def print_simple(set, subset_keys, sort = nil, headings = [], title = nil)
+  def simple_print(set, subset_keys, sort = nil, headings = [], title = nil)
     set = set.sort_by {|i| find_value(i, sort) } unless sort.nil?
     subset = set.map do |i|
       res = []
@@ -78,14 +78,14 @@ class SnipeQuery
 
   # Return a table of in-warranty laptops.
   def print_laptops(fleet_type)
-    print_simple(@snipe.laptops(fleet_type), %w(asset_tag serial name assigned_to.username), 'asset_tag', ['Asset Tag', 'Serial', 'Asset Name', 'Assigned To'])
+    simple_print(@snipe.laptops(fleet_type), %w(asset_tag serial name assigned_to.username), 'asset_tag', ['Asset Tag', 'Serial', 'Asset Name', 'Assigned To'])
   end
 
   # Return a table of in-warranty laptops.
   def print_laptops_in_warranty(fleet_type)
     laptops = @snipe.laptops(fleet_type)
     data = laptops.find_all {|i| i['in_warranty'] }
-    print_simple(data, %w(warranty_expires.formatted asset_tag serial name assigned_to.username), 'warranty_expires.formatted', ['Warranty Expires', 'Asset Tag', 'Serial', 'Asset Name', 'Assigned To'])
+    simple_print(data, %w(warranty_expires.formatted asset_tag serial name assigned_to.username), 'warranty_expires.formatted', ['Warranty Expires', 'Asset Tag', 'Serial', 'Asset Name', 'Assigned To'])
   end
 
   # Return a table of laptops sorted by age.
@@ -129,7 +129,7 @@ class SnipeQuery
     status_field = type ? 'status_type' : 'name'
     laptops = laptops.find_all {|i| i['status_label'][status_field] == status } unless status.nil?
     status_element = 'status_label.' + status_field
-    print_simple(laptops, [status_element, 'asset_tag', 'serial', 'name', 'assigned_to.username'], status_element, ['Status', 'Asset Tag', 'Serial', 'Asset Name', 'Assigned To'])
+    simple_print(laptops, [status_element, 'asset_tag', 'serial', 'name', 'assigned_to.username'], status_element, ['Status', 'Asset Tag', 'Serial', 'Asset Name', 'Assigned To'])
   end
 
   def print_laptop_sale_price(asset_tag)
@@ -174,7 +174,7 @@ class SnipeQuery
   # --------------------------------------------------------
 
   def print_statuses
-    print_simple(@snipe.statuses, %w(id type name), 'type', %w(ID Type Name))
+    simple_print(@snipe.statuses, %w(id type name), 'type', %w(ID Type Name))
   end
 
   # --------------------------------------------------------
@@ -182,15 +182,15 @@ class SnipeQuery
   # --------------------------------------------------------
 
   def print_models
-    print_simple(@snipe.models, %w(id name manufacturer.name assets_count), 'manufacturer.name', %w(ID Name Manufacturer Num_Assets))
+    simple_print(@snipe.models, %w(id name manufacturer.name assets_count), 'manufacturer.name', %w(ID Name Manufacturer Num_Assets))
   end
 
   def print_laptop_models
-    print_simple(@snipe.laptop_models, %w(id name manufacturer.name assets_count), 'manufacturer.name', %w(ID Name Manufacturer Num_Assets))
+    simple_print(@snipe.laptop_models, %w(id name manufacturer.name assets_count), 'manufacturer.name', %w(ID Name Manufacturer Num_Assets))
   end
 
   def print_manufacturers
-    print_simple(@snipe.manufacturers, %w(id name assets_count), 'name', %w(ID Name Num_Assets))
+    simple_print(@snipe.manufacturers, %w(id name assets_count), 'name', %w(ID Name Num_Assets))
   end
 
   # --------------------------------------------------------
@@ -198,7 +198,7 @@ class SnipeQuery
   # --------------------------------------------------------
 
   def print_users
-    print_simple(@snipe.users, %w(id username laptops), 'username', %w(ID Username Laptops))
+    simple_print(@snipe.users, %w(id username laptops), 'username', %w(ID Username Laptops))
   end
 
   def print_laptops_by_manufacturer(fleet_type)
@@ -206,7 +206,7 @@ class SnipeQuery
     laptops = @snipe.laptops(fleet_type)
     laptop_manufacturers.each do |i|
       set = laptops.find_all {|j| j['manufacturer']['name'] == i }
-      print_simple(set, %w(asset_tag serial name assigned_to.username), 'asset_tag', ['Asset Tag', 'Serial', 'Asset Name', 'Assigned To'], i) unless set.empty?
+      simple_print(set, %w(asset_tag serial name assigned_to.username), 'asset_tag', ['Asset Tag', 'Serial', 'Asset Name', 'Assigned To'], i) unless set.empty?
     end
   end
 
@@ -228,16 +228,16 @@ class SnipeQuery
 
   def print_users_by_os(fleet_type, os)
     set = @snipe.laptops(fleet_type).find_all {|i| not i['assigned_to'].nil? and laptop_is_os?(i['manufacturer'], os) }
-    print_simple(set, %w(asset_tag assigned_to.username manufacturer.name model.name), 'assigned_to.username', ['Asset Tag', 'Assigned To', 'Manufacturer', 'Model'])
+    simple_print(set, %w(asset_tag assigned_to.username manufacturer.name model.name), 'assigned_to.username', ['Asset Tag', 'Assigned To', 'Manufacturer', 'Model'])
   end
 
   def print_users_with_no_assets
     set = @snipe.users_no_laptops
-    print_simple(set, %w(id username laptops), 'username', %w(ID Username Laptops))
+    simple_print(set, %w(id username laptops), 'username', %w(ID Username Laptops))
   end
 
   def print_users_with_multiple_assets
     set = @snipe.users.reject {|i| i['laptops'].nil? or i['laptops'].count < 2 }
-    print_simple(set, %w(id username laptops), 'username', %w(ID Username Laptops))
+    simple_print(set, %w(id username laptops), 'username', %w(ID Username Laptops))
   end
 end
