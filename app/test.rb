@@ -265,16 +265,34 @@ class SnipeAPI
   # --------------------------------------------------------
 
   def get_models
-    response = self.query('models')
-    data = response['rows'].reject{|i| i['category']['name'] != 'Laptop'}
+    if @models.nil?
+      response = self.query('models')
+      @models = response['rows']
+    else
+      @models
+    end
+  end
+
+  def print_models
+    models = get_models
+    data = models.reject{|i| i['category']['name'] != 'Laptop'}
       .sort_by{|i|i['manufacturer']['name']}
       .map{|i| [i['id'], i['name'], i['manufacturer']['name'], i['assets_count']]}
     print_table(data)
   end
 
   def get_manufacturers
-    response = self.query('manufacturers')
-    data = response['rows'].sort_by{|i| i['id']}
+    if @manufacturers.nil?
+      response = self.query('manufacturers')
+      @manufacturers = response['rows']
+    else
+      @manufacturers
+    end
+  end
+
+  def print_manufacturers
+    manufacturers = get_manufacturers
+    data = manufacturers.sort_by{|i| i['id']}
       .map{|i| [i['id'], i['name'], i['assets_count']]}
     print_table(data)
   end
