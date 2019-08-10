@@ -261,6 +261,25 @@ class SnipeAPI
   end
 
   # --------------------------------------------------------
+  # Model Queries
+  # --------------------------------------------------------
+
+  def get_models
+    response = self.query('models')
+    data = response['rows'].reject{|i| i['category']['name'] != 'Laptop'}
+      .sort_by{|i|i['manufacturer']['name']}
+      .map{|i| [i['id'], i['name'], i['manufacturer']['name'], i['assets_count']]}
+    print_table(data)
+  end
+
+  def get_manufacturers
+    response = self.query('manufacturers')
+    data = response['rows'].sort_by{|i| i['id']}
+      .map{|i| [i['id'], i['name'], i['assets_count']]}
+    print_table(data)
+  end
+
+  # --------------------------------------------------------
   # User Queries
   # --------------------------------------------------------
 
