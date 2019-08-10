@@ -35,6 +35,26 @@ class SnipeQuery
     end
   end
 
+  def find_value(a_hash, nested_keys)
+    keys = nested_keys.split('.')
+    value = a_hash
+    while keys.count > 0
+      value = value[keys.first]
+      keys.shift
+    end
+    return value.is_a?(Hash) ? nil : value
+  end
+
+  def print_simple(set, subset_keys, sort = nil, headings = [])
+    set = set.sort_by {|i| find_value(i, sort) } unless sort.nil?
+    subset = set.map do |i|
+      res = []
+      subset_keys.each {|j| res << find_value(i, j) }
+      res
+    end
+    @printer.print_table(subset, headings)
+  end
+
   # --------------------------------------------------------
   # Laptops
   #
@@ -168,6 +188,10 @@ class SnipeQuery
     data = manufacturers.sort_by{|i| i['id']}
       .map{|i| [i['id'], i['name'], i['assets_count']]}
     @printer.print_table(data)
+  end
+
+  def print_manufacturers
+    print_simple(@snipe.get_manufacturers, %w( id name assets_count ), 'name')
   end
 
   # --------------------------------------------------------
