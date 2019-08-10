@@ -35,6 +35,10 @@ class SnipeQuery
     end
   end
 
+  def hash_value(maybe_hash, value)
+    maybe_hash.is_a?(Hash) ? maybe_hash[value] : nil
+  end
+
   def find_value(a_hash, nested_keys)
     keys = nested_keys.split('.')
     value = a_hash
@@ -149,12 +153,12 @@ class SnipeQuery
     laptop.each do |k,v|
       case k
       when *name_fields
-        data << [k, v['name']]
+        data << [k, hash_value(v, 'name')]
       when *date_fields
-        data << [k, v['formatted']]
+        data << [k, hash_value(v, 'formatted')]
       when 'assigned_to'
         unless v.nil?
-          data << [k, v['username']]
+          data << [k, hash_value(v, 'username')]
         end
       else
         data << [k, v]
@@ -213,8 +217,12 @@ class SnipeQuery
   end
 
   def print_users_with_no_assets
+    set = @snipe.users.reject {|i| not i['laptops'].nil? }
+    print_simple(set, %w(id username laptops), 'username', %w(ID Username Laptops))
   end
 
   def print_users_with_multiple_assets
+    set = @snipe.users.reject {|i| i['laptops'].nil? or i['laptops'].count < 2 }
+    print_simple(set, %w(id username laptops), 'username', %w(ID Username Laptops))
   end
 end
