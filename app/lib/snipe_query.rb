@@ -39,8 +39,12 @@ class SnipeQuery
     keys = nested_keys.split('.')
     value = a_hash
     while keys.count > 0
-      value = value[keys.first]
-      keys.shift
+      if value.nil?
+        break
+      else
+        value = value[keys.first] unless value.nil?
+        keys.shift
+      end
     end
     return value.is_a?(Hash) ? nil : value
   end
