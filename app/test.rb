@@ -115,6 +115,19 @@ class SnipeAPI
   end
 
   # --------------------------------------------------------
+  # User lists
+  # --------------------------------------------------------
+
+  def get_users
+    if @users.nil?
+      response = self.query('users')
+      @users = response['rows']
+    else
+      @users
+    end
+  end
+
+  # --------------------------------------------------------
   # Laptop Helpers
   # --------------------------------------------------------
 
@@ -246,4 +259,29 @@ class SnipeAPI
       .map{|i| [i['id'], i['type'], i['name']]}
     print_table(data, ['ID', 'Type', 'Name'])
   end
+
+  # --------------------------------------------------------
+  # User Queries
+  # --------------------------------------------------------
+
+  def get_all_users
+    users = get_users
+    data = users.sort_by{|i| i['username']}
+      .map{|i| [i['id'], i['username']]}
+      print_table(data, ['ID', 'Username'])
+  end
+
+  def get_mac_users
+  end
+
+  def get_linux_users
+  end
+
+  def get_users_with_no_assets
+  end
+
+  def get_users_with_multiple_assets
+  end
+
 end
+
