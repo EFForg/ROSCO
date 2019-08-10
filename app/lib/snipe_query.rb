@@ -84,7 +84,7 @@ class SnipeQuery
   # Return a table of in-warranty laptops.
   def print_laptops_in_warranty(fleet_type)
     laptops = @snipe.laptops(fleet_type)
-    data = laptops.reject {|i| i['warranty_expires'].nil? or Date.parse(i['warranty_expires']['date']) < DateTime.now }
+    data = laptops.reject {|i| i['in_warranty'] == false }
     print_simple(data, %w(warranty_expires.formatted asset_tag serial name assigned_to.username), 'warranty_expires.formatted', ['Warranty Expires', 'Asset Tag', 'Serial', 'Asset Name', 'Assigned To'])
   end
 
