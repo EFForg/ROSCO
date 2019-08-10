@@ -143,6 +143,11 @@ class Snipe
     end
   end
 
+  def get_laptop_manufacturers
+    models = get_laptop_models
+    models.map {|i| i['manufacturer']['name']}.uniq!
+  end
+
   def get_statuses
     if @statuses.nil?
       response = self.query('statuslabels')
