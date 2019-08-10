@@ -93,7 +93,22 @@ class Snipe
   # --------------------------------------------------------
 
   def users
-    @users ||= query('users')['rows']
+    @users ||= begin
+      user_list = query('users')['rows']
+      add_laptops_to_users(user_list)
+    end
+  end
+
+  def add_laptops_to_users(user_list)
+    user_list.each do |user|
+      user['laptops'] = nil
+      active_laptops.each do |laptop|
+        if not laptop['assigned_to'].nil? and laptop['assigned_to']['username'] == user['username']
+          user['laptops'] = [] if user['laptops'].nil?
+          user['laptops'] << laptop['asset_tag']
+        end
+      end
+    end
   end
 
   def models

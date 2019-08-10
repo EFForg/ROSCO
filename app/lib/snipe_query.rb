@@ -46,7 +46,14 @@ class SnipeQuery
         keys.shift
       end
     end
-    return value.is_a?(Hash) ? nil : value
+
+    if value.is_a?(Hash)
+      nil
+    elsif value.is_a?(Array)
+      value.join(', ')
+    else
+      value
+    end
   end
 
   def print_simple(set, subset_keys, sort = nil, headings = [], title = nil)
@@ -187,7 +194,7 @@ class SnipeQuery
   # --------------------------------------------------------
 
   def print_users
-    print_simple(@snipe.users, %w(id username), 'username', %w(ID Username))
+    print_simple(@snipe.users, %w(id username laptops), 'username', %w(ID Username Laptops))
   end
 
   def print_laptops_by_manufacturer(fleet_type)
