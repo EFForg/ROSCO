@@ -48,57 +48,38 @@ class Snipe
   # --------------------------------------------------------
 
   # Return all laptops that are not in the archived Snipe state
-  def get_active_laptops
-    if @active_laptops.nil?
-      response = query('hardware', {'category_id' => LAPTOP_CATEGORY_ID})
-      @active_laptops = response['rows']
-    else
-      @active_laptops
-    end
+  def active_laptops
+    @active_laptops ||= query('hardware', {'category_id' => LAPTOP_CATEGORY_ID})['rows']
   end
 
   # Return all non-archived spare laptops
-  def get_spare_laptops
-    if @spare_laptops.nil?
-      response = query('hardware', {'category_id' => LAPTOP_CATEGORY_ID, 'status' => 'Requestable'})
-      @spare_laptops = response['rows']
-    else
-      @spare_laptops
-    end
+  def spare_laptops
+    @spare_laptops ||= query('hardware', {'category_id' => LAPTOP_CATEGORY_ID, 'status' => 'Requestable'})['rows']
   end
 
   # Return all laptops that are not spares, regardless of current check out status
-  def get_staff_laptops
-    if @staff_laptops.nil?
-      all = get_active_laptops
-      spares = get_spare_laptops
-
-      spare_ids = spares.map{|i| i['id']}
-      @staff_laptops = all.reject{|i| spare_ids.include?(i['id'])}
-    else
-      @staff_laptops
+  def staff_laptops
+    @staff_laptops ||= begin
+      spare_ids = spare_laptops.map {|i| i['id'] }
+      active_laptops.reject {|i| spare_ids.include?(i['id']) }
     end
   end
 
   # Return all laptops that are in the archived Snipe state
-  def get_archived_laptops
-    if @archived_laptops.nil?
-      response = query('hardware', {'category_id' => LAPTOP_CATEGORY_ID, 'status' => 'Archived'})
-      @archived_laptops = response['rows']
-    else
-      @archived_laptops
-    end
+  def archived_laptops
+    @archived_laptops ||= query('hardware', {'category_id' => LAPTOP_CATEGORY_ID, 'status' => 'Archived'})['rows']
   end
 
-  def get_laptops(type)
-    if type == 'spares'
-      return get_spare_laptops
-    elsif type == 'staff'
-      return get_staff_laptops
-    elsif type == 'archived'
-      return get_archived_laptops
+  def laptops(type)
+    case type
+    when 'spares'
+      spare_laptops
+    when 'staff'
+      staff_laptops
+    when 'archived'
+      archived_laptops
     else
-      return get_active_laptops
+      active_laptops
     end
   end
 
