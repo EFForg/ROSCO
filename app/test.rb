@@ -150,7 +150,7 @@ class SnipeAPI
   # --------------------------------------------------------
 
   # Return a table of in-warranty laptops.
-  def get_laptop_fleet(fleet_type)
+  def print_laptops(fleet_type)
     laptops = get_laptops(fleet_type)
     data = laptops.sort_by{|i| i['asset_tag']}
       .map{|i| [i['asset_tag'], i['serial'], i['name']]}
@@ -158,7 +158,7 @@ class SnipeAPI
   end
 
   # Return a table of in-warranty laptops.
-  def get_laptops_in_warranty(fleet_type)
+  def print_laptops_in_warranty(fleet_type)
     laptops = get_laptops(fleet_type)
     data = laptops.reject{|i| i['warranty_expires'].nil? or Date.parse(i['warranty_expires']['date']) < DateTime.now}
       .sort_by{|i| i['warranty_expires']['date']}
@@ -169,7 +169,7 @@ class SnipeAPI
   # Return a table of laptops sorted by age.
   # Age is approximate. This method does not calculate the intricacies of leap years, etc.
   # @param [Float] older_than_years Filter out results that are newer than the approx years given
-  def get_laptops_by_age(fleet_type, older_than_years = 0.0)
+  def print_laptops_by_age(fleet_type, older_than_years = 0.0)
     laptops = get_laptops(fleet_type)
     data = []
 
@@ -200,7 +200,7 @@ class SnipeAPI
     print_table(data, ['Purchase Date', 'Approx Age', 'Asset Tag', 'Serial', 'Asset Name'])
   end
 
-  def get_laptops_by_status(fleet_type, status = nil, type = false)
+  def print_laptops_by_status(fleet_type, status = nil, type = false)
     laptops = get_laptops(fleet_type)
     status_field = type ? 'status_type' : 'name'
     if not status.nil?
@@ -211,7 +211,7 @@ class SnipeAPI
     print_table(data, ['Status', 'Asset Tag', 'Serial', 'Asset Name'])
   end
 
-  def get_laptop_sale_price(asset_tag)
+  def print_laptop_sale_price(asset_tag)
     laptop = get_laptop(asset_tag)
     age = calculate_asset_age(laptop)
     price = nil
@@ -222,7 +222,7 @@ class SnipeAPI
       ['Est Price', 'Approx Age', 'Purchase Cost', 'Asset Tag', 'Serial', 'Asset Name'])
   end
 
-  def get_laptop_info(asset_tag)
+  def print_laptop_info(asset_tag)
     ignored_fields = ['available_actions', 'category', 'checkin_counter', 'checkout_counter', 'company', 'created_at', 'custom_fields', 'deleted_at', 'eol', 'expected_checkin', 'image', 'last_audit_date', 'location', 'last_checkout', 'model_number', 'next_audit_date', 'requests_counter', 'rtd_location', 'supplier', 'updated_at', 'warranty_months']
     name_fields = ['model', 'status_label', 'manufacturer']
     date_fields = ['updated_at', 'warranty_expires', 'purchase_date']
@@ -253,7 +253,7 @@ class SnipeAPI
   # Status Queries
   # --------------------------------------------------------
 
-  def get_statuses
+  def print_statuses
     response = self.query('statuslabels')
     data = response['rows'].sort_by{|i| i['type']}
       .map{|i| [i['id'], i['type'], i['name']]}
@@ -283,23 +283,23 @@ class SnipeAPI
   # User Queries
   # --------------------------------------------------------
 
-  def get_all_users
+  def print_all_users
     users = get_users
     data = users.sort_by{|i| i['username']}
       .map{|i| [i['id'], i['username']]}
       print_table(data, ['ID', 'Username'])
   end
 
-  def get_mac_users
+  def print_mac_users
   end
 
-  def get_linux_users
+  def print_linux_users
   end
 
-  def get_users_with_no_assets
+  def print_users_with_no_assets
   end
 
-  def get_users_with_multiple_assets
+  def print_users_with_multiple_assets
   end
 
 end
