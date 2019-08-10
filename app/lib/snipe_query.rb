@@ -210,14 +210,29 @@ class SnipeQuery
     end
   end
 
-  def print_mac_users
+  def is_mac?(manufacturer_name)
+    manufacturer_name == 'Apple'
   end
 
-  def print_linux_users
+  def laptop_is_os?(manufacturer, os)
+    return false if manufacturer.nil?
+    case os
+    when :mac
+      is_mac?(manufacturer['name'])
+    when :linux
+      not is_mac?(manufacturer['name'])
+    else
+      true
+    end
+  end
+
+  def print_users_by_os(fleet_type, os)
+    set = @snipe.laptops(fleet_type).find_all {|i| not i['assigned_to'].nil? and laptop_is_os?(i['manufacturer'], os) }
+    print_simple(set, %w(asset_tag assigned_to.username manufacturer.name model.name), 'assigned_to.username', ['Asset Tag', 'Assigned To', 'Manufacturer', 'Model'])
   end
 
   def print_users_with_no_assets
-    set = @snipe.users.reject {|i| not i['laptops'].nil? }
+    set = @snipe.users_no_laptops
     print_simple(set, %w(id username laptops), 'username', %w(ID Username Laptops))
   end
 

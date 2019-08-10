@@ -120,6 +120,14 @@ class Snipe
     end
   end
 
+  def users_with_laptops
+    @users_with_laptops ||= users.reject {|i| i['laptops'].nil? }
+  end
+
+  def users_no_laptops
+    @users_with_laptops ||= users.reject {|i| not i['laptops'].nil? }
+  end
+
   def models
     @models ||= query('models')['rows']
   end
