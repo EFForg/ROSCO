@@ -5,5 +5,5 @@ services:
     ports:
       - 127.0.0.1:8090:80
     volumes:
-      - ./app/test.rb:/srv/app/test.rb
-      - ./app/api_key.txt:/secrets/api_key.txt
+      - ./app/lib:/srv/app
+      - ./secrets:/secrets
