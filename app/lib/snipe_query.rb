@@ -16,10 +16,10 @@ class SnipeQuery
   # --------------------------------------------------------
 
   def asset_tag_type(asset_tag)
-    case asset_tag.to_i
-    when asset_tag == 0
+    case
+    when asset_tag.to_i == 0
       'word-based'
-    when asset_tag < 100
+    when asset_tag.to_i < 100
       'incremental'
     else
       'date-based'
@@ -84,7 +84,7 @@ class SnipeQuery
   # Return a table of in-warranty laptops.
   def print_laptops_in_warranty(fleet_type)
     laptops = @snipe.laptops(fleet_type)
-    data = laptops.reject {|i| i['in_warranty'] == false }
+    data = laptops.find_all {|i| i['in_warranty'] }
     print_simple(data, %w(warranty_expires.formatted asset_tag serial name assigned_to.username), 'warranty_expires.formatted', ['Warranty Expires', 'Asset Tag', 'Serial', 'Asset Name', 'Assigned To'])
   end
 
@@ -100,22 +100,22 @@ class SnipeQuery
     # Do not include these very old assets if filtering by age
     if older_than_years == 0.0
       # Format assets that have word based asset_tags, such as 'oldspare03'
-      data += laptops.reject {|i| asset_tag_type(i['asset_tag']) != 'word-based' }
+      data += laptops.find_all {|i| asset_tag_type(i['asset_tag']) == 'word-based' }
         .sort_by {|i| i['asset_tag'] }
         .map {|i| ['---', '---', i['asset_tag'], i['serial'], i['name']] }
 
       # Format assets that are so old the asset_tags increment from '000000001' and up
-      data += laptops.reject {|i| asset_tag_type(i['asset_tag']) != 'incremental' }
+      data += laptops.find_all {|i| asset_tag_type(i['asset_tag']) == 'incremental' }
         .sort_by {|i| i['asset_tag'] }
         .map {|i| ['---', '---', i['asset_tag'], i['serial'], i['name']] }
     end
 
     # Format assets that have date-based asset_tags (default asset_tag structure)
-    date_asset_tags = laptops.reject {|i| asset_tag_type(i['asset_tag']) != 'date-based' }
+    date_asset_tags = laptops.find_all {|i| asset_tag_type(i['asset_tag']) == 'date-based' }
 
     # Filter date-based asset_tags based on approx age
     if older_than_years != 0.0
-      date_asset_tags = date_asset_tags.reject {|i| calculate_asset_age(i['asset_tag']) < older_than_years }
+      date_asset_tags = date_asset_tags.find_all {|i| calculate_asset_age(i['asset_tag']) >= older_than_years }
     end
 
     data += date_asset_tags.sort_by {|i| i['asset_tag'] }
@@ -127,7 +127,7 @@ class SnipeQuery
   def print_laptops_by_status(fleet_type, status = nil, type = false)
     laptops = @snipe.laptops(fleet_type)
     status_field = type ? 'status_type' : 'name'
-    laptops = laptops.reject {|i| i['status_label'][status_field] != status } unless status.nil?
+    laptops = laptops.find_all {|i| i['status_label'][status_field] == status } unless status.nil?
     status_element = 'status_label.' + status_field
     print_simple(laptops, [status_element, 'asset_tag', 'serial', 'name', 'assigned_to.username'], status_element, ['Status', 'Asset Tag', 'Serial', 'Asset Name', 'Assigned To'])
   end
@@ -205,7 +205,7 @@ class SnipeQuery
     laptop_manufacturers = @snipe.laptop_manufacturers
     laptops = @snipe.laptops(fleet_type)
     laptop_manufacturers.each do |i|
-      set = laptops.reject {|j| j['manufacturer']['name'] != i }
+      set = laptops.find_all {|j| j['manufacturer']['name'] == i }
       print_simple(set, %w(asset_tag serial name assigned_to.username), 'asset_tag', ['Asset Tag', 'Serial', 'Asset Name', 'Assigned To'], i) unless set.empty?
     end
   end
