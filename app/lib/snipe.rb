@@ -22,22 +22,22 @@ class Snipe
     end
   end
 
-  def query(url, query = {}, offset = 0)
+  def query(url, params = {}, offset = 0)
     headers = {
       'Accept' => 'application/json',
       'Content-Type' => 'application/json',
       'Authorization' => "Bearer #{ @@access_token }",
     }
 
-    query['offset'] = offset if offset > 0
-    response = HTTParty.get(@api_url + url, query: query, headers: headers)
+    params['offset'] = offset if offset > 0
+    response = HTTParty.get(@api_url + url, query: params, headers: headers)
 
     if response.code != 200
       error(__method__.to_s)
     elsif not response.key?('rows')
       return response
     elsif (row_count = response['rows'].count) > 0
-      next_response = query(url, query, offset + row_count)
+      next_response = query(url, params, offset + row_count)
       response['rows'] += next_response['rows'] if next_response.code == 200
     end
     response
