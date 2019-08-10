@@ -73,7 +73,7 @@ class SnipeQuery
   # --------------------------------------------------------
   # Laptops
   #
-  # fleet_type Can be: 'all', 'spares', 'staff', 'archived'
+  # fleet_type Can be: :all, :spares, :staff, :archived
   # --------------------------------------------------------
 
   # Return a table of in-warranty laptops.

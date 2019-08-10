@@ -47,14 +47,28 @@ class Snipe
   # Laptops
   # --------------------------------------------------------
 
+  def laptop_query(additional_query = {})
+    set = query('hardware', { 'category_id' => LAPTOP_CATEGORY_ID }.merge(additional_query))['rows']
+    set.each {|i| add_warranty_status(i) }
+  end
+
+  def add_warranty_status(laptop)
+    laptop['in_warranty'] = (not laptop['warranty_expires'].nil? and Date.parse(laptop['warranty_expires']['formatted']) > DateTime.now)
+  end
+
   # Return all laptops that are not in the archived Snipe state
   def active_laptops
-    @active_laptops ||= query('hardware', { 'category_id' => LAPTOP_CATEGORY_ID })['rows']
+    @active_laptops ||= laptop_query
   end
 
   # Return all non-archived spare laptops
   def spare_laptops
-    @spare_laptops ||= query('hardware', { 'category_id' => LAPTOP_CATEGORY_ID, 'status' => 'Requestable' })['rows']
+    @spare_laptops ||= laptop_query({ 'status' => 'Requestable' })
+  end
+
+  # Return all laptops that are in the archived Snipe state
+  def archived_laptops
+    @archived_laptops ||= laptop_query({ 'status' => 'Archived' })
   end
 
   # Return all laptops that are not spares, regardless of current check out status
@@ -65,18 +79,13 @@ class Snipe
     end
   end
 
-  # Return all laptops that are in the archived Snipe state
-  def archived_laptops
-    @archived_laptops ||= query('hardware', { 'category_id' => LAPTOP_CATEGORY_ID, 'status' => 'Archived' })['rows']
-  end
-
   def laptops(type)
     case type
-    when 'spares'
+    when :spares
       spare_laptops
-    when 'staff'
+    when :staff
       staff_laptops
-    when 'archived'
+    when :archived
       archived_laptops
     else
       active_laptops
