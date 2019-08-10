@@ -10,7 +10,7 @@ class Snipe
   end
 
   def error(message)
-    raise "ERROR: #{message}"
+    raise "ERROR: #{ message }"
   end
 
   def load_key
@@ -49,12 +49,12 @@ class Snipe
 
   # Return all laptops that are not in the archived Snipe state
   def active_laptops
-    @active_laptops ||= query('hardware', {'category_id' => LAPTOP_CATEGORY_ID})['rows']
+    @active_laptops ||= query('hardware', { 'category_id' => LAPTOP_CATEGORY_ID })['rows']
   end
 
   # Return all non-archived spare laptops
   def spare_laptops
-    @spare_laptops ||= query('hardware', {'category_id' => LAPTOP_CATEGORY_ID, 'status' => 'Requestable'})['rows']
+    @spare_laptops ||= query('hardware', { 'category_id' => LAPTOP_CATEGORY_ID, 'status' => 'Requestable' })['rows']
   end
 
   # Return all laptops that are not spares, regardless of current check out status
@@ -67,7 +67,7 @@ class Snipe
 
   # Return all laptops that are in the archived Snipe state
   def archived_laptops
-    @archived_laptops ||= query('hardware', {'category_id' => LAPTOP_CATEGORY_ID, 'status' => 'Archived'})['rows']
+    @archived_laptops ||= query('hardware', { 'category_id' => LAPTOP_CATEGORY_ID, 'status' => 'Archived' })['rows']
   end
 
   def laptops(type)
@@ -85,7 +85,7 @@ class Snipe
 
   # Get one laptop by asset_tag
   def get_laptop(asset_tag)
-    query("hardware/bytag/#{asset_tag}")
+    query("hardware/bytag/#{ asset_tag }")
   end
 
   # --------------------------------------------------------
