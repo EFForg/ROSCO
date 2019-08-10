@@ -92,49 +92,27 @@ class Snipe
   # Other
   # --------------------------------------------------------
 
-  def get_users
-    if @users.nil?
-      response = query('users')
-      @users = response['rows']
-    else
-      @users
-    end
+  def users
+    @users ||= query('users')['rows']
   end
 
-  def get_models
-    if @models.nil?
-      response = self.query('models')
-      @models = response['rows']
-    else
-      @models
-    end
+  def models
+    @models ||= query('models')['rows']
   end
 
-  def get_laptop_models
-    models = get_models
-    models.reject{|i| i['category']['name'] != 'Laptop'}
+  def laptop_models
+    @laptop_models ||= models.reject {|i| i['category']['name'] != 'Laptop' }
   end
 
-  def get_manufacturers
-    if @manufacturers.nil?
-      response = self.query('manufacturers')
-      @manufacturers = response['rows']
-    else
-      @manufacturers
-    end
+  def manufacturers
+    @manufacturers ||= query('manufacturers')['rows']
   end
 
-  def get_laptop_manufacturers
-    models = get_laptop_models
-    models.map {|i| i['manufacturer']['name']}.uniq!
+  def laptop_manufacturers
+    @laptop_manufacturers ||= models.map {|i| i['manufacturer']['name'] }.uniq!
   end
 
-  def get_statuses
-    if @statuses.nil?
-      response = self.query('statuslabels')
-      @statuses = response['rows']
-    else
-      @statuses
-    end
+  def statuses
+    @statuses ||= query('statuslabels')['rows']
   end
 end

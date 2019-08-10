@@ -163,7 +163,7 @@ class SnipeQuery
   # --------------------------------------------------------
 
   def print_statuses
-    print_simple(@snipe.get_statuses, %w(id type name), 'type', %w(ID Type Name))
+    print_simple(@snipe.statuses, %w(id type name), 'type', %w(ID Type Name))
   end
 
   # --------------------------------------------------------
@@ -171,15 +171,15 @@ class SnipeQuery
   # --------------------------------------------------------
 
   def print_models
-    print_simple(@snipe.get_models, %w(id name manufacturer.name assets_count), 'manufacturer.name', %w(ID Name Manufacturer Num_Assets))
+    print_simple(@snipe.models, %w(id name manufacturer.name assets_count), 'manufacturer.name', %w(ID Name Manufacturer Num_Assets))
   end
 
   def print_laptop_models
-    print_simple(@snipe.get_laptop_models, %w(id name manufacturer.name assets_count), 'manufacturer.name', %w(ID Name Manufacturer Num_Assets))
+    print_simple(@snipe.laptop_models, %w(id name manufacturer.name assets_count), 'manufacturer.name', %w(ID Name Manufacturer Num_Assets))
   end
 
   def print_manufacturers
-    print_simple(@snipe.get_manufacturers, %w(id name assets_count), 'name', %w(ID Name Num_Assets))
+    print_simple(@snipe.manufacturers, %w(id name assets_count), 'name', %w(ID Name Num_Assets))
   end
 
   # --------------------------------------------------------
@@ -187,11 +187,11 @@ class SnipeQuery
   # --------------------------------------------------------
 
   def print_users
-    print_simple(@snipe.get_users, %w(id username), 'username', %w(ID Username))
+    print_simple(@snipe.users, %w(id username), 'username', %w(ID Username))
   end
 
   def print_laptops_by_manufacturer(fleet_type)
-    laptop_manufacturers = @snipe.get_laptop_manufacturers
+    laptop_manufacturers = @snipe.laptop_manufacturers
     laptops = @snipe.laptops(fleet_type)
     laptop_manufacturers.each do |i|
       set = laptops.reject {|j| j['manufacturer']['name'] != i }
