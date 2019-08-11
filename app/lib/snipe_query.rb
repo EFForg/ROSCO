@@ -95,6 +95,7 @@ class SnipeQuery
   # @todo Refactor
   def print_laptops_by_age(fleet_type, older_than_years = 0.0)
     laptops = @snipe.laptops(fleet_type)
+    older_than_years = older_than_years.to_f
     data = []
 
     # Do not include these very old assets if filtering by age
@@ -124,9 +125,9 @@ class SnipeQuery
     @printer.print_table(data, ['Purchase Date', 'Approx Age', 'Asset Tag', 'Serial', 'Asset Name'])
   end
 
-  def print_laptops_by_status(fleet_type, status = nil, type = false)
+  def print_laptops_by_status(fleet_type, status = nil)
     laptops = @snipe.laptops(fleet_type)
-    status_field = type ? 'status_type' : 'name'
+    status_field = %w(pending archived deployable).include?(status) ? 'status_type' : 'name'
     laptops = laptops.find_all {|i| i['status_label'][status_field] == status } unless status.nil?
     status_element = 'status_label.' + status_field
     simple_print(laptops, [status_element, 'asset_tag', 'serial', 'name', 'assigned_to.username'], status_element, ['Status', 'Asset Tag', 'Serial', 'Asset Name', 'Assigned To'])
@@ -217,9 +218,9 @@ class SnipeQuery
   def laptop_is_os?(manufacturer, os)
     return false if manufacturer.nil?
     case os
-    when :mac
+    when 'mac'
       is_mac?(manufacturer['name'])
-    when :linux
+    when 'linux'
       not is_mac?(manufacturer['name'])
     else
       true

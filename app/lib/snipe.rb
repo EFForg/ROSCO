@@ -81,11 +81,11 @@ class Snipe
 
   def laptops(type)
     case type
-    when :spares
+    when 'spares'
       spare_laptops
-    when :staff
+    when 'staff'
       staff_laptops
-    when :archived
+    when 'archived'
       archived_laptops
     else
       active_laptops
