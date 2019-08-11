@@ -71,6 +71,37 @@ class SnipeQuery
   end
 
   # --------------------------------------------------------
+  # Query interface
+  # --------------------------------------------------------
+
+  def commands
+    set = {}
+    print_commands = methods.grep(/^print*/)
+    set['Users'] = print_commands.grep(/^print_users/)
+    set['Laptops'] = print_commands.grep(/^print_laptop/)
+    set['Other'] = print_commands.grep_v(/^print_laptop/).grep_v(/^print_users/)
+    set
+  end
+
+  def command_params(command)
+    params = method(command).parameters
+    params.each do |param|
+      case
+      when param.include?(:fleet_type)
+        param << "('active' will return all 'staff' and all 'spares', but exclude 'archived')"
+        param << %w(active staff spares archived)
+      when param.include?(:os)
+        param << ''
+        param << %w(mac linux all)
+      when param.include?(:status)
+        param << '(Can be a status type or a status name. Run print_statuses to get a list of all options)'
+      when param.include?(:type)
+        param << '(True if you gave a status type; False otherwise)'
+      end
+    end
+  end
+
+  # --------------------------------------------------------
   # Laptops
   #
   # fleet_type Can be: :all, :spares, :staff, :archived

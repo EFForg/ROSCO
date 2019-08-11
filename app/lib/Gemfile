@@ -3,6 +3,7 @@ source 'https://rubygems.org'
 gem 'sinatra'
 gem 'httparty'
 gem 'terminal-table'
+gem 'tty-prompt'
 
 group :test do
   gem 'rack-test'
