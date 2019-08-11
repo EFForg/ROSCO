@@ -1,3 +1,5 @@
+#!/usr/local/bin/ruby
+
 require './api_cli.rb'
 require './snipe_query.rb'
 
