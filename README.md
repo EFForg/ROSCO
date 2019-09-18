@@ -13,7 +13,8 @@ ROSCO is an interactive, ruby-based CLI interface for querying against an instan
 
 ## Usage
 
-1. `docker-compose up -d --build`
+0. `docker-compose pull`
+1. `docker-compose up -d`
 2. `docker-compose exec app ./rosco`
 3. Select `Exit` to exit the routine gracefully
 4. `docker-compose down` to shut down the container

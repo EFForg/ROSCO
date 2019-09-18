@@ -1,0 +1,19 @@
+variables:
+  IMAGE_NAME: $CI_REGISTRY_IMAGE:latest
+
+stages:
+  - build
+
+before_script:
+  - env
+  - docker info
+  - printenv 'CI_JOB_TOKEN' | docker login -u "gitlab-ci-token" --password-stdin "$CI_REGISTRY"
+
+build:
+  stage: build
+  script:
+    - cd app
+    - docker build --no-cache --label "repo=$CI_PROJECT_URL" -t "$IMAGE_NAME" .
+    - docker push "$IMAGE_NAME"
+  only:
+    - master
