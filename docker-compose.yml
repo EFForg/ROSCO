@@ -1,7 +1,6 @@
 version: '2.2'
 services:
   app:
-    image: conex.eff.org/techops/cpe/rosco
     build: app
     volumes:
       - ./secrets:/secrets
